@@ -1,18 +1,19 @@
 use std::cmp::Ordering;
 type word = i32;
 
+#[derive(Clone, Copy)]
 struct Unit {}
 
 impl Unit {
-    fn new() -> Self {Unit}
+    fn new() -> Self {Unit{} }
 }
 
-struct MIXComputer {
-    register: [word; 9],
-    overflow: bool,
-    comp: Ordering, // -1 0 1
-    units: [Unit; 16],
-    memory: [word; 4000],
+pub struct MIXComputer {
+    pub register: [word; 9],
+    pub overflow: bool,
+    pub comp: Ordering, // -1 0 1
+    pub units: [Unit; 16],
+    pub memory: [word; 4000],
 }
 
 impl MIXComputer {
@@ -22,38 +23,39 @@ impl MIXComputer {
             overflow: false,
             comp: Ordering::Less,
             units: [Unit::new(); 16],
-            memory[0; 4000],
+            memory: [0; 4000],
         }
     }
 }
 
-struct MIXCPU {
+pub struct MIXCPU {
     location: usize,
-    computer: MIXComputer,
+    pub computer: MIXComputer,
 }
 
 impl MIXCPU {
-    fn from(computer: MIXComputer) -> Self {
+    pub fn from(computer: MIXComputer) -> Self {
         MIXCPU {
             location: 0usize,
             computer,
         }
     }
     
-    fn excute(ins: i32) {
+    pub fn excute(ins: i32) {
         todo!()
     }
 
-    fn run(command: &str) {
+    pub fn run(command: &str) {
         todo!()
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     #[test]
     fn test_load() {
-        let computer = MIXComputer::new();
+        let mut computer = MIXComputer::new();
         computer.memory[2000] = -((80 << 15) + (3 << 10) + (5 << 5) + 4);
         let computer = MIXCPU::from(computer);
         computer.run("LDA 2000");
