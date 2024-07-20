@@ -1,8 +1,19 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, error::Error};
 
 // type MIXWord = i32;
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct MIXWord(u32);
+
+impl MIXWord {
+    pub fn set_op(&mut self, c: u32) {
+        // self.0 &= 0b11111111111111111111111111100000;
+        // self.0 &= c | 0b11111111111111111111111111100000;
+        self.0 = ((self.0 >> 5) << 5) + c & 0b11111;
+    }
+    pub fn set_f(&mut self, c: u32) {
+        self.0 = self.0 & 0b11111111111111111111110000011111 + (c & 0b11111) << 5;
+    }
+}
 
 impl From<u32> for MIXWord {
     fn from(a: u32) -> Self {
@@ -63,10 +74,41 @@ impl MIXCPU {
     }
 
     // to solve a command str mentioned in the Book.
-    pub fn run(&mut self, command: &str) {
+    pub fn run(&mut self, command: &str) -> Result<(), Box<dyn Error>> {
         let mut s = command.split(' ');
-        if let(op) = s.next().unwrap() {
-            
+        let op = s.next().ok_or("Invalid Argument")?;
+        let mut operation = MIXWord::from(0);
+
+        match &op[..2] {
+            "LD" => {
+                // load opers
+                let reg = String::from(&op[2..3]).replace("A", "0").replace("X", "7");
+                let num: u32 = reg.parse()?;
+                let is_negative = reg.contains("N");
+                operation.set_op(num + 8 + 16 * (is_negative as u32));
+                // match &op[3..] {
+
+                //     _ => return Err("Argument Invalid.".into())
+                // }
+                
+                if op.contains("(") {
+                    let left = op.find('(').unwrap();
+                    let right = op.find(')').ok_or("Argument Invalid.")?;
+                    if op.contains(";") {
+                        let mid = op.find(':').unwrap();
+                        let left: u32 = (&op[left+1..mid]).parse()?;
+                        let right: u32 = (&op[mid+1..right]).parse()?;
+                        operation.set_f(left * 8 + right);
+                    }
+                    else {
+                        let val: u32 = op[left+1..right].parse()?;
+                        operation.set_f(val);
+                    }
+                }
+
+                Ok(())
+            }
+            _ => unimplemented!(),
         }
     }
 }
