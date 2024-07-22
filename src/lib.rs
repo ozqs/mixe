@@ -3,11 +3,12 @@ mod mixcpu;
 mod mixword;
 mod unit;
 
-use std::error::Error;
+pub use std::error::Error;
 
 // use mixword::MIXWord;
-use mixcomputer::MIXComputer;
-use unit::Unit;
+pub use mixcomputer::MIXComputer;
+pub use mixcpu::MIXCPU;
+pub use unit::Unit;
 
 #[cfg(test)]
 mod tests {

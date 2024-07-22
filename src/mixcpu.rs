@@ -18,9 +18,30 @@ impl MIXCPU {
     pub fn excute(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
         match ins.get_op() {
             8..=23 => {
-                todo!()
-            },
-            _ => unimplemented!()
+                // Load Operations
+                if ins.get_m() < 0 || ins.get_m() >= 4000 {
+                    return Err("Index out of range.".into());
+                }
+                let memory_data = self.computer.memory[ins.get_m() as usize];
+                let (regnum, oppo) = ((ins.get_op() - 8) % 8, (ins.get_op() - 8) / 8);
+                let (left, right) = (ins.get_f() / 8, ins.get_f() % 8);
+                println!(
+                    "{:?},{},{},{},{},{:?}",
+                    memory_data,
+                    regnum,
+                    oppo,
+                    left,
+                    right,
+                    memory_data.get_range(left, right)
+                );
+                self.computer.register[regnum as usize] = memory_data.get_range(left, right);
+                if oppo == 1 {
+                    self.computer.register[regnum as usize]
+                        .set_opposite(1 - self.computer.register[regnum as usize].get_opposite());
+                }
+                Ok(())
+            }
+            _ => unimplemented!(),
         }
     }
 

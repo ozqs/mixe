@@ -1,6 +1,14 @@
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct MIXWord(u32);
 
+fn max(l: u32, r: u32) -> u32 {
+    if l > r {
+        l
+    } else {
+        r
+    }
+}
+
 impl MIXWord {
     pub fn set_op(&mut self, c: u32) {
         self.0 = (((self.0 >> 6) << 6) + c) & 0b111111;
@@ -34,6 +42,22 @@ impl MIXWord {
     }
     pub fn get_m(&self) -> i32 {
         (self.get_aa() as i32) * (if self.get_opposite() == 1 { -1 } else { 1 })
+    }
+    pub fn get_range(&self, l: u32, r: u32) -> MIXWord {
+        let ll = max(l, 1u32);
+        let absolute_part = if r > 0 {
+            (self.0 >> ((5 - r) * 6)) & ((1 << ((r - ll + 1) * 6)) - 1)
+        } else {
+            0
+        };
+
+        if l > 0 {
+            absolute_part.into()
+        } else {
+            let mut ret: MIXWord = absolute_part.into();
+            ret.set_opposite(self.get_opposite());
+            ret
+        }
     }
 }
 
