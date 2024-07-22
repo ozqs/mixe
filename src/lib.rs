@@ -82,9 +82,9 @@ impl MIXCPU {
     }
 
     pub fn prase(&mut self, command: &str) -> Result<MIXWord, Box<dyn Error>> {
-        let oprest: Vec<_> = command.splitn(2, " ").collect();
-        let op = oprest[0];
-        let rest = oprest[1];
+        let mut oprest = command.splitn(2, " ");
+        let op = oprest.next().ok_or("Invalid Argument")?;
+        let rest = oprest.next().ok_or("Invalid Argument")?;
         let mut operation = MIXWord::from(0);
         let default_f = if op != "STJ" { 5 } else { 2 };
 
