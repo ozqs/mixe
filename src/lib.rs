@@ -58,4 +58,52 @@ mod tests {
         computer.run("LDA 2000(0:0)").unwrap();
         assert_eq!(computer.computer.register[0], (1, 0, 0, 0, 0, 0).into());
     }
+
+    #[test]
+    fn test_store() {
+        let mut computer = MIXComputer::new();
+        computer.memory[2000] = (1, 1, 2, 3, 4, 5).into();
+        computer.register[0] = (0, 6, 7, 8, 9, 0).into();
+        let mut computer = MIXCPU::from(computer);
+        computer.run("STA 2000").unwrap();
+        // 00_000000_001001_001000_000111_000110
+        // 0  0      9      8      7      6      
+        // 00_000110_000111_001000_001001_000000
+        assert_eq!(computer.computer.memory[2000], (0, 6, 7, 8, 9, 0).into());
+
+        let mut computer = MIXComputer::new();
+        computer.memory[2000] = (1, 1, 2, 3, 4, 5).into();
+        computer.register[0] = (0, 6, 7, 8, 9, 0).into();
+        let mut computer = MIXCPU::from(computer);
+        computer.run("STA 2000(1:5)").unwrap();
+        assert_eq!(computer.computer.memory[2000], (1, 6, 7, 8, 9, 0).into());
+
+        let mut computer = MIXComputer::new();
+        computer.memory[2000] = (1, 1, 2, 3, 4, 5).into();
+        computer.register[0] = (0, 6, 7, 8, 9, 0).into();
+        let mut computer = MIXCPU::from(computer);
+        computer.run("STA 2000(5:5)").unwrap();
+        assert_eq!(computer.computer.memory[2000], (1, 1, 2, 3, 4, 0).into());
+
+        let mut computer = MIXComputer::new();
+        computer.memory[2000] = (1, 1, 2, 3, 4, 5).into();
+        computer.register[0] = (0, 6, 7, 8, 9, 0).into();
+        let mut computer = MIXCPU::from(computer);
+        computer.run("STA 2000(2:2)").unwrap();
+        assert_eq!(computer.computer.memory[2000], (1, 1, 0, 3, 4, 5).into());
+
+        let mut computer = MIXComputer::new();
+        computer.memory[2000] = (1, 1, 2, 3, 4, 5).into();
+        computer.register[0] = (0, 6, 7, 8, 9, 0).into();
+        let mut computer = MIXCPU::from(computer);
+        computer.run("STA 2000(2:3)").unwrap();
+        assert_eq!(computer.computer.memory[2000], (1, 1, 9, 0, 4, 5).into());
+
+        let mut computer = MIXComputer::new();
+        computer.memory[2000] = (1, 1, 2, 3, 4, 5).into();
+        computer.register[0] = (0, 6, 7, 8, 9, 0).into();
+        let mut computer = MIXCPU::from(computer);
+        computer.run("STA 2000(0:1)").unwrap();
+        assert_eq!(computer.computer.memory[2000], (0, 0, 2, 3, 4, 5).into());
+    }
 }

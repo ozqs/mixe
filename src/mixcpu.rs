@@ -24,10 +24,16 @@ impl MIXCPU {
         match ins.get_op() {
             8..=23 => {
                 // Load Operations
-                if ins.get_m() < 0 || ins.get_m() >= 4000 {
+                let address = ins.get_m()
+                    + if ins.get_i() != 0 {
+                        self.computer.register[ins.get_i() as usize].0 as i32
+                    } else {
+                        0i32
+                    };
+                if address < 0 || address >= 4000 {
                     return Err("Index out of range.".into());
                 }
-                let memory_data = self.computer.memory[ins.get_m() as usize];
+                let memory_data = self.computer.memory[address as usize];
                 let (regnum, oppo) = ((ins.get_op() - 8) % 8, (ins.get_op() - 8) / 8);
                 let (left, right) = (ins.get_f() / 8, ins.get_f() % 8);
 
@@ -36,6 +42,43 @@ impl MIXCPU {
                     self.computer.register[regnum as usize]
                         .set_opposite(1 - self.computer.register[regnum as usize].get_opposite());
                 }
+                Ok(())
+            }
+            24..=33 => {
+                let address = ins.get_m()
+                    + if ins.get_i() != 0 {
+                        self.computer.register[ins.get_i() as usize].0 as i32
+                    } else {
+                        0i32
+                    };
+
+                if address < 0 || address >= 4000 {
+                    return Err("Index out of range.".into());
+                }
+
+                let memory_data = self.computer.memory[address as usize];
+                let reg_data = if ins.get_op() == 33 {
+                    0.into()
+                } else {
+                    self.computer.register[(ins.get_op() - 24) as usize]
+                };
+
+                let (mut left, right) = (ins.get_f() / 8, ins.get_f() % 8);
+
+                let reg: Vec<u32> = reg_data.into();
+                let mut mem: Vec<u32> = memory_data.into();
+                if left == 0 {
+                    mem[0] = reg[0];
+                    left += 1;
+                }
+                let mut reg = reg.into_iter().rev();
+                for i in (left..=right).rev() {
+                    mem[i as usize] = reg.next().unwrap();
+                }
+
+                self.computer.memory[address as usize] =
+                    (mem[0], mem[1], mem[2], mem[3], mem[4], mem[5]).into();
+
                 Ok(())
             }
             _ => unimplemented!(),
@@ -60,6 +103,17 @@ impl MIXCPU {
                 operation.set_op(c);
 
                 // default_f = 5;
+            }
+            "ST" => {
+                // store opers
+                let reg = String::from(&op[2..3])
+                    .replace('A', "0")
+                    .replace('X', "7")
+                    .replace('J', "8")
+                    .replace('Z', "9");
+
+                let num: u32 = reg.parse()?;
+                operation.set_op(num + 24);
             }
             _ => unimplemented!(),
         }

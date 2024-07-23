@@ -1,5 +1,5 @@
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub struct MIXWord(u32);
+pub struct MIXWord(pub u32);
 
 fn max(l: u32, r: u32) -> u32 {
     if l > r {
@@ -67,11 +67,47 @@ impl MIXWord {
             ret
         }
     }
+    pub fn into_slice(self) -> (u32, u32, u32, u32, u32, u32) {
+        self.into()
+    }
 }
 
 impl From<u32> for MIXWord {
     fn from(a: u32) -> Self {
         MIXWord(a)
+    }
+}
+
+/// ### into slices.
+/// ```rust
+/// use mixe::MIXWord;
+/// let a = (1, 2, 3, 4, 5, 6);
+/// let b: MIXWord = a.into();
+/// assert_eq!(a, b.into());
+/// ```
+impl Into<(u32, u32, u32, u32, u32, u32)> for MIXWord {
+    fn into(self) -> (u32, u32, u32, u32, u32, u32) {
+        (
+            self.get_opposite(),
+            (self.0 >> 24) & 0b111111,
+            (self.0 >> 18) & 0b111111,
+            self.get_i(),
+            self.get_f(),
+            self.get_op(),
+        )
+    }
+}
+
+impl Into<Vec<u32>> for MIXWord {
+    fn into(self) -> Vec<u32> {
+        vec![
+            self.get_opposite(),
+            (self.0 >> 24) & 0b111111,
+            (self.0 >> 18) & 0b111111,
+            self.get_i(),
+            self.get_f(),
+            self.get_op(),
+        ]
     }
 }
 

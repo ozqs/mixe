@@ -3,6 +3,7 @@ use crate::Unit;
 use std::cmp::Ordering;
 
 pub struct MIXComputer {
+    // A J1 J2 J3 J4 J5 J6 X J
     pub register: [MIXWord; 9],
     pub overflow: bool,
     pub comp: Ordering, // -1 0 1
