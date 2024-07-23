@@ -15,12 +15,12 @@ impl MIXCPU {
         }
     }
 
-    pub fn excute_in_location(&mut self) -> Result<(), Box<dyn Error>> {
+    pub fn execute_in_location(&mut self) -> Result<(), Box<dyn Error>> {
         self.location += 1;
-        self.excute(self.computer.memory[self.location - 1])
+        self.execute(self.computer.memory[self.location - 1])
     }
 
-    pub fn excute(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
+    pub fn execute(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
         match ins.get_op() {
             8..=23 => {
                 // Load Operations
@@ -94,7 +94,7 @@ impl MIXCPU {
 
         match &op[..2] {
             "LD" => {
-                // load opers
+                // load operations
                 // get op
                 let reg = String::from(&op[2..3]).replace('A', "0").replace('X', "7");
                 let num: u32 = reg.parse()?;
@@ -105,7 +105,7 @@ impl MIXCPU {
                 // default_f = 5;
             }
             "ST" => {
-                // store opers
+                // store operations
                 let reg = String::from(&op[2..3])
                     .replace('A', "0")
                     .replace('X', "7")
@@ -168,7 +168,7 @@ impl MIXCPU {
     /// to solve a command str mentioned in the Book.
     pub fn run(&mut self, command: &str) -> Result<(), Box<dyn Error>> {
         match self.parse(command) {
-            Ok(ins) => self.excute(ins),
+            Ok(ins) => self.execute(ins),
             Err(e) => Err(e),
         }
     }
