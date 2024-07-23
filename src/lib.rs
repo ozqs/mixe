@@ -8,6 +8,7 @@ pub use std::error::Error;
 // use mixword::MIXWord;
 pub use mixcomputer::MIXComputer;
 pub use mixcpu::MIXCPU;
+pub use mixword::MIXWord;
 pub use unit::Unit;
 
 #[cfg(test)]

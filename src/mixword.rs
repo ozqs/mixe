@@ -10,8 +10,16 @@ fn max(l: u32, r: u32) -> u32 {
 }
 
 impl MIXWord {
+    /// ### Set op
+    /// set the last six bytes as same as c.
+    /// ```rust
+    /// use mixe::MIXWord;
+    /// let mut g: MIXWord = 0b11111000000u32.into();
+    /// g.set_op(0b101010);
+    /// assert_eq!(g, 0b11111101010u32.into());
+    /// ```
     pub fn set_op(&mut self, c: u32) {
-        self.0 = (((self.0 >> 6) << 6) + c) & 0b111111;
+        self.0 = ((self.0 >> 6) << 6) + (c & 0b111111);
     }
     pub fn get_op(&self) -> u32 {
         self.0 & 0b111111
