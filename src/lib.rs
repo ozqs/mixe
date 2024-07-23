@@ -20,23 +20,23 @@ mod tests {
         computer.memory[2000] = (1, 0, 80, 3, 5, 4).into();
         let mut computer = MIXCPU::from(computer);
         assert_eq!(
-            computer.prase("LDA 2000,2(0:3)").unwrap(),
+            computer.parse("LDA 2000,2(0:3)").unwrap(),
             (0, 0, 2000, 2, 3, 8).into()
         );
         assert_eq!(
-            computer.prase("LDA 2000,2(1:3)").unwrap(),
+            computer.parse("LDA 2000,2(1:3)").unwrap(),
             (0, 0, 2000, 2, 11, 8).into()
         );
         assert_eq!(
-            computer.prase("LDA 2000(1:3)").unwrap(),
+            computer.parse("LDA 2000(1:3)").unwrap(),
             (0, 0, 2000, 0, 11, 8).into()
         );
         assert_eq!(
-            computer.prase("LDA 2000").unwrap(),
+            computer.parse("LDA 2000").unwrap(),
             (0, 0, 2000, 0, 5, 8).into()
         );
         assert_eq!(
-            computer.prase("LDA -2000,4").unwrap(),
+            computer.parse("LDA -2000,4").unwrap(),
             (1, 0, 2000, 4, 5, 8).into()
         );
     }

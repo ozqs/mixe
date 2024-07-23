@@ -85,7 +85,7 @@ impl MIXCPU {
         }
     }
 
-    pub fn prase(&mut self, command: &str) -> Result<MIXWord, Box<dyn Error>> {
+    pub fn parse(&mut self, command: &str) -> Result<MIXWord, Box<dyn Error>> {
         let mut oprest = command.splitn(2, ' ');
         let op = oprest.next().ok_or("Invalid Argument")?;
         let rest = oprest.next().ok_or("Invalid Argument")?;
@@ -167,7 +167,7 @@ impl MIXCPU {
 
     /// to solve a command str mentioned in the Book.
     pub fn run(&mut self, command: &str) -> Result<(), Box<dyn Error>> {
-        match self.prase(command) {
+        match self.parse(command) {
             Ok(ins) => self.excute(ins),
             Err(e) => Err(e),
         }
