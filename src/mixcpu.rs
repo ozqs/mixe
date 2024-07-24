@@ -8,6 +8,8 @@ pub struct MIXCPU {
 }
 
 impl MIXCPU {
+    // associate functions.
+
     pub fn from(computer: MIXComputer) -> Self {
         MIXCPU {
             location: 0usize,
@@ -15,73 +17,13 @@ impl MIXCPU {
         }
     }
 
-    pub fn execute_in_location(&mut self) -> Result<(), Box<dyn Error>> {
-        self.location += 1;
-        self.execute(self.computer.memory[self.location - 1])
-    }
+    // public functions.
 
-    pub fn execute(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
-        match ins.get_op() {
-            8..=23 => {
-                // Load Operations
-                let address = ins.get_m()
-                    + if ins.get_i() != 0 {
-                        self.computer.register[ins.get_i() as usize].0 as i32
-                    } else {
-                        0i32
-                    };
-                if address < 0 || address >= 4000 {
-                    return Err("Index out of range.".into());
-                }
-                let memory_data = self.computer.memory[address as usize];
-                let (regnum, oppo) = ((ins.get_op() - 8) % 8, (ins.get_op() - 8) / 8);
-                let (left, right) = (ins.get_f() / 8, ins.get_f() % 8);
-
-                self.computer.register[regnum as usize] = memory_data.get_range(left, right);
-                if oppo == 1 {
-                    self.computer.register[regnum as usize]
-                        .set_opposite(1 - self.computer.register[regnum as usize].get_opposite());
-                }
-                Ok(())
-            }
-            24..=33 => {
-                let address = ins.get_m()
-                    + if ins.get_i() != 0 {
-                        self.computer.register[ins.get_i() as usize].0 as i32
-                    } else {
-                        0i32
-                    };
-
-                if address < 0 || address >= 4000 {
-                    return Err("Index out of range.".into());
-                }
-
-                let memory_data = self.computer.memory[address as usize];
-                let reg_data = if ins.get_op() == 33 {
-                    0.into()
-                } else {
-                    self.computer.register[(ins.get_op() - 24) as usize]
-                };
-
-                let (mut left, right) = (ins.get_f() / 8, ins.get_f() % 8);
-
-                let reg: Vec<u32> = reg_data.into();
-                let mut mem: Vec<u32> = memory_data.into();
-                if left == 0 {
-                    mem[0] = reg[0];
-                    left += 1;
-                }
-                let mut reg = reg.into_iter().rev();
-                for i in (left..=right).rev() {
-                    mem[i as usize] = reg.next().unwrap();
-                }
-
-                self.computer.memory[address as usize] =
-                    (mem[0], mem[1], mem[2], mem[3], mem[4], mem[5]).into();
-
-                Ok(())
-            }
-            _ => unimplemented!(),
+    /// to solve a command str mentioned in the Book.
+    pub fn run(&mut self, command: &str) -> Result<(), Box<dyn Error>> {
+        match self.parse(command) {
+            Ok(ins) => self.execute(ins),
+            Err(e) => Err(e),
         }
     }
 
@@ -98,6 +40,104 @@ impl MIXCPU {
         self.parse_op(&mut operation, &op)?;
 
         Ok(operation)
+    }
+
+    pub fn execute(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
+        match ins.get_op() {
+            8..=23 => self.execute_load(ins),
+            24..=33 => self.execute_store(ins),
+            1..=4 => self.execute_arithmetic(ins),
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn execute_in_location(&mut self) -> Result<(), Box<dyn Error>> {
+        self.location += 1;
+        self.execute(self.computer.memory[self.location - 1])
+    }
+
+    // private functions.
+
+    fn execute_arithmetic(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
+        let address = self.calculate_address(ins)
+        let (left, right) = (ins.get_f() / 8, ins.get_f() % 8);
+        let v = self.computer.memory[address].get_range(left, right);
+        match ins.get_op() {
+            1 => {
+                let result = self.computer.register[0].get_value() + v.get_value();
+                if result == 0 {
+                    self.computer.register[0].0 &= 0b10000000000000000000000000000000;
+                } else {
+                    // TO DO
+                    let abs_res = result.abs();
+                    if abs_res > (1 << 30) - 1 {
+                        overf
+                    }
+                }
+            }
+            _ => unreachable!()
+        }
+        Ok(())
+    }
+
+    fn calculate_address(&self, ins: MIXWord) -> usize {
+        (ins.get_m()
+            + if ins.get_i() != 0 {
+            self.computer.register[ins.get_i() as usize].0 as i32
+        } else {
+            0i32
+        }) as usize
+    }
+
+    fn execute_load(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
+        // Load Operations
+        let address = self.calculate_address(ins);
+        if address < 0 || address >= 4000 {
+            return Err("Index out of range.".into());
+        }
+        let memory_data = self.computer.memory[address as usize];
+        let (regnum, oppo) = ((ins.get_op() - 8) % 8, (ins.get_op() - 8) / 8);
+        let (left, right) = (ins.get_f() / 8, ins.get_f() % 8);
+
+        self.computer.register[regnum as usize] = memory_data.get_range(left, right);
+        if oppo == 1 {
+            self.computer.register[regnum as usize]
+                .set_opposite(1 - self.computer.register[regnum as usize].get_opposite());
+        }
+        Ok(())
+    }
+
+    fn execute_store(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
+        let address = self.calculate_address(ins);
+
+        if address < 0 || address >= 4000 {
+            return Err("Index out of range.".into());
+        }
+
+        let memory_data = self.computer.memory[address as usize];
+        let reg_data = if ins.get_op() == 33 {
+            0.into()
+        } else {
+            self.computer.register[(ins.get_op() - 24) as usize]
+        };
+
+        let (mut left, right) = (ins.get_f() / 8, ins.get_f() % 8);
+
+        let reg: Vec<u32> = reg_data.into();
+        let mut mem: Vec<u32> = memory_data.into();
+        if left == 0 {
+            mem[0] = reg[0];
+            left += 1;
+        }
+        let mut reg = reg.into_iter().rev();
+        for i in (left..=right).rev() {
+            mem[i as usize] = reg.next().unwrap();
+        }
+
+        self.computer.memory[address as usize] =
+            (mem[0], mem[1], mem[2], mem[3], mem[4], mem[5]).into();
+
+        Ok(())
     }
 
     fn parse_f(
@@ -177,9 +217,14 @@ impl MIXCPU {
             "MU" => operation.set_op(3),
             "DI" => operation.set_op(4),
             "EN" | "IN" | "DE" => {
-                let reg = String::from(&op[3..4]).replace('A', "0").replace('X', "7");
-                let reg: u32 = reg.parse()?;
-                operation.set_op(48 + reg);
+                if op.len() == 2 {
+                    // IN Operation
+                    operation.set_op(36)
+                } else {
+                    let reg = String::from(&op[3..4]).replace('A', "0").replace('X', "7");
+                    let reg: u32 = reg.parse()?;
+                    operation.set_op(48 + reg);
+                }
             }
             "CM" => {
                 let reg = String::from(&op[3..4]).replace('A', "0").replace('X', "7");
@@ -199,16 +244,20 @@ impl MIXCPU {
                 operation.set_op(5);
                 operation.set_f(2);
             }
+            "JB" => operation.set_op(34),
+            "IO" => operation.set_op(35),
+            "OU" => operation.set_op(37),
+            "JR" => operation.set_op(38),
+            "NU" => {
+                operation.set_op(5);
+                operation.set_f(0);
+            }
+            "CH" => {
+                operation.set_op(5);
+                operation.set_f(1);
+            }
             _ => unimplemented!(),
         }
         Ok(())
-    }
-
-    /// to solve a command str mentioned in the Book.
-    pub fn run(&mut self, command: &str) -> Result<(), Box<dyn Error>> {
-        match self.parse(command) {
-            Ok(ins) => self.execute(ins),
-            Err(e) => Err(e),
-        }
     }
 }

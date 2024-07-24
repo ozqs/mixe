@@ -67,6 +67,10 @@ impl MIXWord {
             ret
         }
     }
+    pub fn get_value(&self) -> i64 {
+        ((self.0 & 0b01111111111111111111111111111111) as i64) *
+            if self.get_opposite() == 1 { -1i64 } else { 1i64 }
+    }
     pub fn into_slice(self) -> (u32, u32, u32, u32, u32, u32) {
         self.into()
     }
@@ -111,8 +115,27 @@ impl Into<Vec<u32>> for MIXWord {
     }
 }
 
+impl Into<[u32; 6]> for MIXWord {
+    fn into(self) -> [u32; 6] {
+        [
+            self.get_opposite(),
+            (self.0 >> 24) & 0b111111,
+            (self.0 >> 18) & 0b111111,
+            self.get_i(),
+            self.get_f(),
+            self.get_op(),
+        ]
+    }
+}
+
 impl From<(u32, u32, u32, u32, u32, u32)> for MIXWord {
     fn from(a: (u32, u32, u32, u32, u32, u32)) -> Self {
         MIXWord((a.0 << 31) + (a.1 << 24) + (a.2 << 18) + (a.3 << 12) + (a.4 << 6) + (a.5))
+    }
+}
+
+impl From<[u32; 6]> for MIXWord {
+    fn from(a: [u32; 6]) -> Self {
+        MIXWord((a[0] << 31) + (a[1] << 24) + (a[2] << 18) + (a[3] << 12) + (a[4] << 6) + (a[5]))
     }
 }
