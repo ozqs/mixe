@@ -92,32 +92,6 @@ impl MIXCPU {
         let mut operation = MIXWord::from(0u32);
         let default_f = if op != "STJ" { 5 } else { 2 };
 
-        match &op[..2] {
-            "LD" => {
-                // load operations
-                // get op
-                let reg = String::from(&op[2..3]).replace('A', "0").replace('X', "7");
-                let num: u32 = reg.parse()?;
-                let is_negative = reg.contains('N');
-                let c = num + 8 + 16 * (is_negative as u32);
-                operation.set_op(c);
-
-                // default_f = 5;
-            }
-            "ST" => {
-                // store operations
-                let reg = String::from(&op[2..3])
-                    .replace('A', "0")
-                    .replace('X', "7")
-                    .replace('J', "8")
-                    .replace('Z', "9");
-
-                let num: u32 = reg.parse()?;
-                operation.set_op(num + 24);
-            }
-            _ => unimplemented!(),
-        }
-
         // get F
         if rest.contains('(') {
             let left = rest.find('(').unwrap();
@@ -160,6 +134,77 @@ impl MIXCPU {
 
         if rest.contains('-') {
             operation.set_opposite(1);
+        }
+
+        match &op[..2] {
+            "LD" => {
+                // load operations
+                // get op
+                let reg = String::from(&op[2..3]).replace('A', "0").replace('X', "7");
+                let num: u32 = reg.parse()?;
+                let is_negative = reg.contains('N');
+                let c = num + 8 + 16 * (is_negative as u32);
+                operation.set_op(c);
+
+                // default_f = 5;
+            }
+            "ST" => {
+                // store operations
+                let reg = String::from(&op[2..3])
+                    .replace('A', "0")
+                    .replace('X', "7")
+                    .replace('J', "8")
+                    .replace('Z', "9");
+
+                let num: u32 = reg.parse()?;
+                operation.set_op(num + 24);
+            }
+            "AD" => {
+                // add operation
+                operation.set_op(1);
+            }
+            "SU" => {
+                operation.set_op(2);
+            }
+            "MU" => {
+                operation.set_op(3);
+            }
+            "DI" => {
+                operation.set_op(4);
+            }
+            "EN" | "IN" | "DE" => {
+                let reg = String::from(&op[3..4]).replace('A', "0").replace('X', "7");
+                let reg: u32 = reg.parse()?;
+                operation.set_op(48 + reg);
+            }
+            "CM" => {
+                let reg = String::from(&op[3..4]).replace('A', "0").replace('X', "7");
+                let reg: u32 = reg.parse()?;
+                operation.set_op(56 + reg);
+            }
+            "JM" | "JS" | "JO" | "JN" | "JL" | "JG" | "JE" => {
+                operation.set_op(39);
+            }
+            "JA" | "JX" | "J1" | "J2" | "J3" | "J4" | "J5" | "J6" => {
+                let reg = String::from(&op[1..2]).replace('A', "0").replace('X', "7");
+                let reg: u32 = reg.parse()?;
+                operation.set_op(40 + reg);
+            }
+            "SL" | "SR" => {
+                operation.set_op(6);
+            }
+            "MO" => {
+                operation.set_op(7);
+            }
+            "NO" => {
+                operation.set_op(0);
+            }
+            "HL" => {
+                operation.set_op(5);
+                operation.set_f(2);
+            }
+
+            _ => unimplemented!(),
         }
 
         Ok(operation)
