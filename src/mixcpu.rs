@@ -92,7 +92,20 @@ impl MIXCPU {
         let mut operation = MIXWord::from(0u32);
         let default_f = if op != "STJ" { 5 } else { 2 };
 
-        // get F
+        self.parse_f(&mut operation, &rest, default_f)?;
+        self.parse_i(&mut operation, &rest)?;
+        self.parse_aa(&mut operation, &rest)?;
+        self.parse_op(&mut operation, &op)?;
+
+        Ok(operation)
+    }
+
+    fn parse_f(
+        &self,
+        operation: &mut MIXWord,
+        rest: &str,
+        default_f: u32,
+    ) -> Result<(), Box<dyn Error>> {
         if rest.contains('(') {
             let left = rest.find('(').unwrap();
             let right = rest.find(')').ok_or("Argument Invalid.")?;
@@ -106,18 +119,21 @@ impl MIXCPU {
                 operation.set_f(val);
             }
         } else {
-            operation.set_f(default_f); // 5 always for LD* operators
+            operation.set_f(default_f);
         }
+        Ok(())
+    }
 
-        // get I
+    fn parse_i(&self, operation: &mut MIXWord, rest: &str) -> Result<(), Box<dyn Error>> {
         if rest.contains(',') {
             let pos = rest.find(',').unwrap();
             let i: u32 = rest[(pos + 1)..(pos + 2)].parse()?;
             operation.set_i(i);
         }
-        // else 0
+        Ok(())
+    }
 
-        // get AA
+    fn parse_aa(&self, operation: &mut MIXWord, rest: &str) -> Result<(), Box<dyn Error>> {
         let mut address = 0xffffffffu32;
         for i in rest.chars() {
             if i.is_ascii_digit() {
@@ -135,43 +151,31 @@ impl MIXCPU {
         if rest.contains('-') {
             operation.set_opposite(1);
         }
+        Ok(())
+    }
 
+    fn parse_op(&self, operation: &mut MIXWord, op: &str) -> Result<(), Box<dyn Error>> {
         match &op[..2] {
             "LD" => {
-                // load operations
-                // get op
                 let reg = String::from(&op[2..3]).replace('A', "0").replace('X', "7");
                 let num: u32 = reg.parse()?;
                 let is_negative = reg.contains('N');
                 let c = num + 8 + 16 * (is_negative as u32);
                 operation.set_op(c);
-
-                // default_f = 5;
             }
             "ST" => {
-                // store operations
                 let reg = String::from(&op[2..3])
                     .replace('A', "0")
                     .replace('X', "7")
                     .replace('J', "8")
                     .replace('Z', "9");
-
                 let num: u32 = reg.parse()?;
                 operation.set_op(num + 24);
             }
-            "AD" => {
-                // add operation
-                operation.set_op(1);
-            }
-            "SU" => {
-                operation.set_op(2);
-            }
-            "MU" => {
-                operation.set_op(3);
-            }
-            "DI" => {
-                operation.set_op(4);
-            }
+            "AD" => operation.set_op(1),
+            "SU" => operation.set_op(2),
+            "MU" => operation.set_op(3),
+            "DI" => operation.set_op(4),
             "EN" | "IN" | "DE" => {
                 let reg = String::from(&op[3..4]).replace('A', "0").replace('X', "7");
                 let reg: u32 = reg.parse()?;
@@ -182,32 +186,22 @@ impl MIXCPU {
                 let reg: u32 = reg.parse()?;
                 operation.set_op(56 + reg);
             }
-            "JM" | "JS" | "JO" | "JN" | "JL" | "JG" | "JE" => {
-                operation.set_op(39);
-            }
+            "JM" | "JS" | "JO" | "JN" | "JL" | "JG" | "JE" => operation.set_op(39),
             "JA" | "JX" | "J1" | "J2" | "J3" | "J4" | "J5" | "J6" => {
                 let reg = String::from(&op[1..2]).replace('A', "0").replace('X', "7");
                 let reg: u32 = reg.parse()?;
                 operation.set_op(40 + reg);
             }
-            "SL" | "SR" => {
-                operation.set_op(6);
-            }
-            "MO" => {
-                operation.set_op(7);
-            }
-            "NO" => {
-                operation.set_op(0);
-            }
+            "SL" | "SR" => operation.set_op(6),
+            "MO" => operation.set_op(7),
+            "NO" => operation.set_op(0),
             "HL" => {
                 operation.set_op(5);
                 operation.set_f(2);
             }
-
             _ => unimplemented!(),
         }
-
-        Ok(operation)
+        Ok(())
     }
 
     /// to solve a command str mentioned in the Book.

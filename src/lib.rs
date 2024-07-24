@@ -67,7 +67,7 @@ mod tests {
         let mut computer = MIXCPU::from(computer);
         computer.run("STA 2000").unwrap();
         // 00_000000_001001_001000_000111_000110
-        // 0  0      9      8      7      6      
+        // 0  0      9      8      7      6
         // 00_000110_000111_001000_001001_000000
         assert_eq!(computer.computer.memory[2000], (0, 6, 7, 8, 9, 0).into());
 
