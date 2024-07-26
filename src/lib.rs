@@ -106,4 +106,49 @@ mod tests {
         computer.run("STA 2000(0:1)").unwrap();
         assert_eq!(computer.computer.memory[2000], (0, 0, 2, 3, 4, 5).into());
     }
+    #[test]
+    fn test_add() {
+        let mut computer = MIXComputer::new();
+        computer.register[0] = (0, 0, 1234, 1, 0, 150).into();
+        computer.memory[1000] = (0, 0, 100, 5, 0, 50).into();
+        let mut computer = MIXCPU::from(computer);
+        computer.run("ADD 1000").unwrap();
+        assert_eq!(
+            computer.computer.register[0],
+            (0, 0, 1334, 6, 0, 200).into()
+        );
+    }
+    #[test]
+    fn test_sub() {
+        let mut computer = MIXComputer::new();
+        computer.register[0] = (1, 0, 1234, 0, 0, 9).into();
+        computer.memory[1000] = (1, 0, 2000, 0, 150, 0).into();
+        let mut computer = MIXCPU::from(computer);
+        computer.run("SUB 1000").unwrap();
+        assert_eq!(
+            computer.computer.register[0],
+            (0, 0, 766, 0, 149, 55).into()
+        );
+    }
+    #[test]
+    fn test_mul() {
+        let mut computer = MIXComputer::new();
+        computer.register[0] = (0, 1, 1, 1, 1, 1).into();
+        computer.memory[1000] = (0, 1, 1, 1, 1, 1).into();
+        let mut computer = MIXCPU::from(computer);
+        computer.run("MUL 1000").unwrap();
+        assert_eq!(computer.computer.register[0], (0, 0, 1, 2, 3, 4).into());
+        assert_eq!(computer.computer.register[7], (0, 5, 4, 3, 2, 1).into());
+    }
+    #[test]
+    fn test_div() {
+        let mut computer = MIXComputer::new();
+        computer.register[0] = (0, 0, 0, 0, 0, 0).into();
+        computer.register[7] = (1, 0, 0, 0, 0, 17).into();
+        computer.memory[1000] = (0, 0, 0, 0, 0, 3).into();
+        let mut computer = MIXCPU::from(computer);
+        computer.run("DIV 1000").unwrap();
+        assert_eq!(computer.computer.register[0], (0, 0, 0, 0, 0, 5).into());
+        assert_eq!(computer.computer.register[7], (0, 0, 0, 0, 0, 2).into());
+    }
 }

@@ -59,34 +59,68 @@ impl MIXCPU {
     // private functions.
 
     fn execute_arithmetic(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
-        let address = self.calculate_address(ins)
+        let address = self.calculate_address(ins);
         let (left, right) = (ins.get_f() / 8, ins.get_f() % 8);
         let v = self.computer.memory[address].get_range(left, right);
+        let result: i64;
+
         match ins.get_op() {
-            1 => {
-                let result = self.computer.register[0].get_value() + v.get_value();
+            1 | 2 => {
+                if ins.get_op() == 1 {
+                    result = self.computer.register[0].get_value() + v.get_value();
+                } else {
+                    result = self.computer.register[0].get_value() - v.get_value();
+                }
                 if result == 0 {
                     self.computer.register[0].0 &= 0b10000000000000000000000000000000;
                 } else {
-                    // TO DO
                     let abs_res = result.abs();
+                    self.computer.register[0].0 = (abs_res & ((1 << 30) - 1)) as u32;
+                    self.computer.register[0].set_opposite(if result < 0 { 1 } else { 0 });
                     if abs_res > (1 << 30) - 1 {
-                        overf
+                        self.computer.overflow = true;
                     }
                 }
             }
-            _ => unreachable!()
+            3 => {
+                result = self.computer.register[0].get_value() * v.get_value();
+                let abs_res = result.abs();
+                self.computer.register[7].0 = (abs_res & ((1 << 30) - 1)) as u32;
+                self.computer.register[0].0 = (abs_res >> 30) as u32;
+                self.computer.register[0].set_opposite(if result < 0 { 1 } else { 0 });
+                self.computer.register[7].set_opposite(if result < 0 { 1 } else { 0 });
+            }
+            4 => {
+                if v.get_value() == 0 {
+                    return Err("divide by 0".into());
+                }
+                let divi = self.computer.register[0].get_value() * (1 << 30)
+                    + self.computer.register[7].get_value().abs();
+                println!("divi = {divi} v = {}", v.get_value());
+                result = divi / v.get_value();
+                let remainder = divi % v.get_value();
+                if result > (1 << 30) - 1 {
+                    self.computer.overflow = true;
+                }
+                let c = self.computer.register[0].get_opposite();
+                self.computer.register[0].0 = result.abs() as u32;
+                self.computer.register[7].0 = remainder.abs() as u32;
+                self.computer.register[7].set_opposite(c);
+                self.computer.register[0].set_opposite(if result < 0 { 1 } else { 0 });
+            }
+            _ => unreachable!(),
         }
+
         Ok(())
     }
 
     fn calculate_address(&self, ins: MIXWord) -> usize {
         (ins.get_m()
             + if ins.get_i() != 0 {
-            self.computer.register[ins.get_i() as usize].0 as i32
-        } else {
-            0i32
-        }) as usize
+                self.computer.register[ins.get_i() as usize].0 as i32
+            } else {
+                0i32
+            }) as usize
     }
 
     fn execute_load(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
