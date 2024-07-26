@@ -34,10 +34,10 @@ impl MIXCPU {
         let mut operation = MIXWord::from(0u32);
         let default_f = if op != "STJ" { 5 } else { 2 };
 
-        self.parse_f(&mut operation, &rest, default_f)?;
-        self.parse_i(&mut operation, &rest)?;
-        self.parse_aa(&mut operation, &rest)?;
-        self.parse_op(&mut operation, &op)?;
+        self.parse_f(&mut operation, rest, default_f)?;
+        self.parse_i(&mut operation, rest)?;
+        self.parse_aa(&mut operation, rest)?;
+        self.parse_op(&mut operation, op)?;
 
         Ok(operation)
     }
@@ -96,15 +96,15 @@ impl MIXCPU {
                 }
                 let divi = self.computer.register[0].get_value() * (1 << 30)
                     + self.computer.register[7].get_value().abs();
-                println!("divi = {divi} v = {}", v.get_value());
+                //println!("divi = {divi} v = {}", v.get_value());
                 result = divi / v.get_value();
                 let remainder = divi % v.get_value();
                 if result > (1 << 30) - 1 {
                     self.computer.overflow = true;
                 }
                 let c = self.computer.register[0].get_opposite();
-                self.computer.register[0].0 = result.abs() as u32;
-                self.computer.register[7].0 = remainder.abs() as u32;
+                self.computer.register[0].0 = result.unsigned_abs() as u32;
+                self.computer.register[7].0 = remainder.unsigned_abs() as u32;
                 self.computer.register[7].set_opposite(c);
                 self.computer.register[0].set_opposite(if result < 0 { 1 } else { 0 });
             }
@@ -126,10 +126,10 @@ impl MIXCPU {
     fn execute_load(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
         // Load Operations
         let address = self.calculate_address(ins);
-        if address < 0 || address >= 4000 {
+        if !(0..4000).contains(&address) {
             return Err("Index out of range.".into());
         }
-        let memory_data = self.computer.memory[address as usize];
+        let memory_data = self.computer.memory[address];
         let (regnum, oppo) = ((ins.get_op() - 8) % 8, (ins.get_op() - 8) / 8);
         let (left, right) = (ins.get_f() / 8, ins.get_f() % 8);
 
@@ -144,11 +144,11 @@ impl MIXCPU {
     fn execute_store(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
         let address = self.calculate_address(ins);
 
-        if address < 0 || address >= 4000 {
+        if !(0..4000).contains(&address) {
             return Err("Index out of range.".into());
         }
 
-        let memory_data = self.computer.memory[address as usize];
+        let memory_data = self.computer.memory[address];
         let reg_data = if ins.get_op() == 33 {
             0.into()
         } else {
@@ -168,8 +168,7 @@ impl MIXCPU {
             mem[i as usize] = reg.next().unwrap();
         }
 
-        self.computer.memory[address as usize] =
-            (mem[0], mem[1], mem[2], mem[3], mem[4], mem[5]).into();
+        self.computer.memory[address] = (mem[0], mem[1], mem[2], mem[3], mem[4], mem[5]).into();
 
         Ok(())
     }

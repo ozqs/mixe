@@ -89,41 +89,41 @@ impl From<u32> for MIXWord {
 /// let b: MIXWord = a.into();
 /// assert_eq!(a, b.into());
 /// ```
-impl Into<(u32, u32, u32, u32, u32, u32)> for MIXWord {
-    fn into(self) -> (u32, u32, u32, u32, u32, u32) {
+impl From<MIXWord> for (u32, u32, u32, u32, u32, u32) {
+    fn from(val: MIXWord) -> Self {
         (
-            self.get_opposite(),
-            (self.0 >> 24) & 0b111111,
-            (self.0 >> 18) & 0b111111,
-            self.get_i(),
-            self.get_f(),
-            self.get_op(),
+            val.get_opposite(),
+            (val.0 >> 24) & 0b111111,
+            (val.0 >> 18) & 0b111111,
+            val.get_i(),
+            val.get_f(),
+            val.get_op(),
         )
     }
 }
 
-impl Into<Vec<u32>> for MIXWord {
-    fn into(self) -> Vec<u32> {
+impl From<MIXWord> for Vec<u32> {
+    fn from(val: MIXWord) -> Self {
         vec![
-            self.get_opposite(),
-            (self.0 >> 24) & 0b111111,
-            (self.0 >> 18) & 0b111111,
-            self.get_i(),
-            self.get_f(),
-            self.get_op(),
+            val.get_opposite(),
+            (val.0 >> 24) & 0b111111,
+            (val.0 >> 18) & 0b111111,
+            val.get_i(),
+            val.get_f(),
+            val.get_op(),
         ]
     }
 }
 
-impl Into<[u32; 6]> for MIXWord {
-    fn into(self) -> [u32; 6] {
+impl From<MIXWord> for [u32; 6] {
+    fn from(val: MIXWord) -> Self {
         [
-            self.get_opposite(),
-            (self.0 >> 24) & 0b111111,
-            (self.0 >> 18) & 0b111111,
-            self.get_i(),
-            self.get_f(),
-            self.get_op(),
+            val.get_opposite(),
+            (val.0 >> 24) & 0b111111,
+            (val.0 >> 18) & 0b111111,
+            val.get_i(),
+            val.get_f(),
+            val.get_op(),
         ]
     }
 }

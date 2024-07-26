@@ -11,6 +11,12 @@ pub struct MIXComputer {
     pub memory: [MIXWord; 4000],
 }
 
+impl Default for MIXComputer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MIXComputer {
     pub fn new() -> Self {
         MIXComputer {
