@@ -1,5 +1,6 @@
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct MIXWord(pub u32);
+pub const MASK: u32 = 0b01111111111111111111111111111111;
 
 fn max(l: u32, r: u32) -> u32 {
     if l > r {
@@ -37,7 +38,7 @@ impl MIXWord {
         (self.0 >> 12) & 0b111111
     }
     pub fn set_opposite(&mut self, c: u32) {
-        self.0 = (self.0 & 0b01111111111111111111111111111111) + ((c & 1) << 31);
+        self.0 = (self.0 & MASK) + ((c & 1) << 31);
     }
     pub fn get_opposite(&self) -> u32 {
         self.0 >> 31
@@ -48,6 +49,7 @@ impl MIXWord {
     pub fn get_aa(&self) -> u32 {
         (self.0 >> 18) & 0b111111111111
     }
+    /// ## with m
     pub fn get_m(&self) -> i32 {
         (self.get_aa() as i32) * (if self.get_opposite() == 1 { -1 } else { 1 })
     }
@@ -67,12 +69,29 @@ impl MIXWord {
             ret
         }
     }
+    pub fn set_unsigned(&mut self, c: u32) {
+        let o = self.get_opposite();
+        self.0 = c & MASK;
+        self.set_opposite(o);
+    }
+    pub fn get_unsinged(&self) -> u64 {
+        (self.0 & MASK) as u64
+    }
     pub fn get_value(&self) -> i64 {
-        ((self.0 & 0b01111111111111111111111111111111) as i64) *
-            if self.get_opposite() == 1 { -1i64 } else { 1i64 }
+        (self.get_unsinged() as i64)
+            * if self.get_opposite() == 1 {
+                -1i64
+            } else {
+                1i64
+            }
     }
     pub fn into_slice(self) -> (u32, u32, u32, u32, u32, u32) {
         self.into()
+    }
+    pub fn from_value(c: i64) -> Self {
+        let mut ret = Self(c.unsigned_abs() as u32);
+        ret.set_opposite(if c > 0 { 0 } else { 1 });
+        ret
     }
 }
 
