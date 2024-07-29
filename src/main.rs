@@ -48,8 +48,8 @@ fn handle_command(command: &str) -> Result<(), Box<dyn Error>> {
                 let content = String::from(&command[6..]);
                 if content.contains('-') {
                     let mid = content.find('-').unwrap();
-                    let left: usize = (&content[..mid]).parse().unwrap();
-                    let right: usize = (&content[mid..]).parse().unwrap();
+                    let left: usize = content[..mid].parse().unwrap();
+                    let right: usize = content[mid..].parse().unwrap();
                     for i in &computer.computer.memory[left..=right] {
                         println!(
                             "{} {:08x} | {:030b}",
@@ -62,11 +62,9 @@ fn handle_command(command: &str) -> Result<(), Box<dyn Error>> {
                     let regnum: usize = String::from(&command[5..])
                         .replace('A', "0")
                         .replace('X', "7")
-                        .replace("J", "8")
+                        .replace('J', "8")
                         .into_boxed_str()
-                        .chars()
-                        .filter(|x| x.is_ascii_digit())
-                        .nth(0)
+                        .chars().find(|x| x.is_ascii_digit())
                         .ok_or("Argument Invalid: range error")?
                         .to_digit(10)
                         .ok_or("Argument Invalid: range error")?
@@ -91,13 +89,13 @@ fn handle_command(command: &str) -> Result<(), Box<dyn Error>> {
                 let location = String::from(&command[6..]);
                 let data = serde_json::to_string(&computer.computer).unwrap();
                 let path = Path::new(&location);
-                let mut file = File::create(&path)?;
+                let mut file = File::create(path)?;
                 file.write_all(data.as_bytes())?;
                 Ok(())
             }
             "carry" => {
                 let location = String::from(&command[6..]);
-                let data = std::fs::read_to_string(&location)?;
+                let data = std::fs::read_to_string(location)?;
                 computer.computer = serde_json::from_str(&data)?;
                 Ok(())
             }
