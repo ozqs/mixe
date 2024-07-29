@@ -6,7 +6,7 @@ use std::error::Error;
 use std::ops::RangeInclusive;
 
 pub struct MIXCPU {
-    location: usize,
+    pub location: usize,
     running: bool,
     pub computer: MIXComputer,
 }

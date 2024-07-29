@@ -1,8 +1,8 @@
 use std::error::Error;
 
 use crate::MIXComputer;
-
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+use serde::{Deserialize, Serialize};
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Deserialize, Serialize)]
 pub struct Unit {
     id: u32,
 }

@@ -2,6 +2,8 @@ use std::{
     error::Error,
     io::{self, Write},
 };
+use std::fs::File;
+use std::path::Path;
 
 use mixe::{MIXComputer, MIXCPU};
 
@@ -64,9 +66,10 @@ fn handle_command(command: &str) -> Result<(), Box<dyn Error>> {
                     .chars()
                     .filter(|x| x.is_ascii_digit())
                     .nth(0)
-                    .unwrap()
+                    .ok_or("Argument Invalid: range error")?
                     .to_digit(10)
-                    .unwrap() as usize;
+                    .ok_or("Argument Invalid: range error")?
+                    as usize;
                 let i = computer.computer.register[regnum];
                 println!(
                     "{} {:08x} | {:030b}",
@@ -75,6 +78,25 @@ fn handle_command(command: &str) -> Result<(), Box<dyn Error>> {
                     i.get_unsinged()
                 );
             }
+            Ok(())
+        }
+        "start" => {
+            computer.location = String::from(&command[6..]).parse()?;
+            computer.start();
+            Ok(())
+        }
+        "store" => {
+            let location = String::from(&command[6..]);
+            let data = serde_json::to_string(&computer.computer).unwrap();
+            let path = Path::new(&location);
+            let mut file = File::create(&path)?;
+            file.write_all(data.as_bytes())?;
+            Ok(())
+        }
+        "carry" => {
+            let location = String::from(&command[6..]);
+            let data = std::fs::read_to_string(&location)?;
+            computer.computer = serde_json::from_str(&data)?;
             Ok(())
         }
         _ => computer.run(command),

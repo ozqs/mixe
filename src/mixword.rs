@@ -1,4 +1,5 @@
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+use serde::{Deserialize, Serialize};
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct MIXWord(pub u32);
 pub const MASK: u32 = 0b01111111111111111111111111111111;
 
