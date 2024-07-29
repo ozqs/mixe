@@ -63,15 +63,9 @@ impl MIXCPU {
             0 => Ok(()), // nop
             5 if ins.get_f() == 2 => self.halt(),
             5 => self.calculate_numchar(ins),
-            36 => {
-                self.computer.units[ins.get_f() as usize].unit_in(self.calculate_address(ins)?);
-                Ok(())
-            }
-            37 => {
-                self.computer.units[ins.get_f() as usize]
-                    .unit_out(self.calculate_address(ins)?, &self.computer);
-                Ok(())
-            }
+            36 => self.computer.units[ins.get_f() as usize].unit_in(self.calculate_address(ins)?),
+            37 => self.computer.units[ins.get_f() as usize]
+                .unit_out(self.calculate_address(ins)?, &self.computer),
             35 => Ok(()), // IOC
             34 => Ok(()),
             38 => {
