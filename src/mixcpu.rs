@@ -29,10 +29,11 @@ impl MIXCPU {
 
     pub fn start(&mut self) {
         self.running = true;
-        while self.running {
+        while self.running && self.location < 4000 {
             if let Err(e) = self.execute(self.computer.memory[self.location]) {
                 println!("{:?}", e);
             }
+            self.location += 1;
         }
     }
 
@@ -700,7 +701,7 @@ impl MIXCPU {
                 operation.set_op(5);
                 operation.set_f(1);
             }
-            _ => unimplemented!(),
+            _ => return Err("Unknown Operation.".into()),
         }
         Ok(())
     }
