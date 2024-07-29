@@ -23,7 +23,7 @@ impl MIXComputer {
             register: [0u32.into(); 9],
             overflow: false,
             comp: Ordering::Less,
-            units: [Unit::new(); 16],
+            units: std::array::from_fn(|i| Unit::new(i as u32)),
             memory: [0u32.into(); 4000],
         }
     }

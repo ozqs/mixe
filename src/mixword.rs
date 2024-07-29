@@ -158,3 +158,9 @@ impl From<[u32; 6]> for MIXWord {
         MIXWord((a[0] << 31) + (a[1] << 24) + (a[2] << 18) + (a[3] << 12) + (a[4] << 6) + (a[5]))
     }
 }
+
+impl From<Vec<u32>> for MIXWord {
+    fn from(value: Vec<u32>) -> Self {
+        (value[0], value[1], value[2], value[3], value[4], value[5]).into()
+    }
+}

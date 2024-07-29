@@ -1,13 +1,13 @@
 use super::mixword::MASK;
 use crate::mixcomputer::MIXComputer;
 use crate::mixword::MIXWord;
-use std::borrow::BorrowMut;
 use std::cmp::Ordering;
 use std::error::Error;
 use std::ops::RangeInclusive;
 
 pub struct MIXCPU {
     location: usize,
+    running: bool,
     pub computer: MIXComputer,
 }
 
@@ -21,6 +21,7 @@ impl MIXCPU {
         MIXCPU {
             location: 0usize,
             computer,
+            running: true,
         }
     }
 
@@ -58,6 +59,25 @@ impl MIXCPU {
             56..=63 => self.execute_compare(ins),
             39..=47 => self.calculate_jump(ins),
             6 => self.calculate_miscellaneous(ins),
+            7 => self.calculate_move(ins),
+            0 => Ok(()), // nop
+            5 if ins.get_f() == 2 => self.halt(),
+            5 => self.calculate_numchar(ins),
+            36 => {
+                self.computer.units[ins.get_f() as usize].unit_in(self.calculate_address(ins)?);
+                Ok(())
+            }
+            37 => {
+                self.computer.units[ins.get_f() as usize]
+                    .unit_out(self.calculate_address(ins)?, &self.computer);
+                Ok(())
+            }
+            35 => Ok(()), // IOC
+            34 => Ok(()),
+            38 => {
+                self.computer.register[8].0 = (self.location + 1) as u32;
+                self.jump_to(self.calculate_bigm(ins))
+            }
             _ => unimplemented!(),
         }
     }
@@ -68,9 +88,58 @@ impl MIXCPU {
     }
 
     // private functions.
+    //
+
+    fn halt(&mut self) -> Result<(), Box<dyn Error>> {
+        self.running = false;
+        Ok(())
+    }
+
+    fn calculate_numchar(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
+        match ins.get_op() {
+            0 => {
+                let nums: [u32; 6] = self.computer.register[0].into();
+                let nums2: [u32; 6] = self.computer.register[7].into();
+                let x = nums
+                    .into_iter()
+                    .skip(1)
+                    .chain(nums2.into_iter().skip(1))
+                    .rev()
+                    .fold(0, |x, y| x * 10 + y);
+                self.computer.register[0].set_unsigned(x);
+            }
+            1 => {
+                let mut a: Vec<u32> = vec![self.computer.register[0].get_opposite()];
+                let mut x: Vec<u32> = vec![self.computer.register[7].get_opposite()];
+
+                format!("{:010}", self.computer.register[0].get_unsinged())
+                    .chars()
+                    .map(|x| -> u32 { x.to_digit(10).unwrap() })
+                    .enumerate()
+                    .for_each(|(i, b)| {
+                        if i < 5 {
+                            a.push(b);
+                        } else {
+                            x.push(b);
+                        }
+                    });
+
+                self.computer.register[0] = a.into();
+                self.computer.register[7] = x.into();
+            }
+            _ => unreachable!(),
+        }
+        Ok(())
+    }
 
     fn calculate_move(&mut self, ins: MIXWord) -> Result<(), Box<dyn Error>> {
-        let m = self.calculate_address(ins)?;
+        let mut m = self.calculate_address(ins)?;
+        for _ in 0..ins.get_f() {
+            self.computer.memory[self.computer.register[1].get_value() as usize] =
+                self.computer.memory[m];
+            self.computer.register[1].0 += 1;
+            m += 1;
+        }
         Ok(())
     }
 
@@ -268,14 +337,14 @@ impl MIXCPU {
         fn rotate_left_60_bits(value: u64, k: usize) -> u64 {
             // 处理移位量，确保在 60 位范围内
             let k = k % 60;
-            
+
             // 提取前 4 位和后 60 位
             let high_bits = value >> 60; // 提取前 4 位
             let low_bits = value & ((1u64 << 60) - 1); // 提取后 60 位
-        
+
             // 循环左移后 60 位
             let rotated_low_bits = (low_bits << k) | (low_bits >> (60 - k));
-        
+
             // 合并前 4 位和移位后的 60 位
             (high_bits << 60) | (rotated_low_bits & ((1u64 << 60) - 1))
         }
@@ -283,18 +352,18 @@ impl MIXCPU {
         fn rotate_right_60_bits(value: u64, k: usize) -> u64 {
             // 处理移位量，确保在 60 位范围内
             let k = k % 60;
-            
+
             // 提取前 4 位和后 60 位
             let high_bits = value >> 60; // 提取前 4 位
             let low_bits = value & ((1u64 << 60) - 1); // 提取后 60 位
-        
+
             // 循环右移后 60 位
             let rotated_low_bits = (low_bits >> k) | (low_bits << (60 - k));
-        
+
             // 合并前 4 位和移位后的 60 位
             (high_bits << 60) | (rotated_low_bits & ((1u64 << 60) - 1))
         }
-  
+
         match ins.get_f() {
             0 => {
                 self.computer.register[0].set_unsigned(
