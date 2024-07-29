@@ -27,6 +27,15 @@ impl MIXCPU {
 
     // public functions.
 
+    pub fn start(&mut self) {
+        self.running = true;
+        while self.running {
+            if let Err(e) = self.execute(self.computer.memory[self.location]) {
+                println!("{:?}", e);
+            }
+        }
+    }
+
     /// to solve a command str mentioned in the Book.
     pub fn run(&mut self, command: &str) -> Result<(), Box<dyn Error>> {
         match self.parse(command) {
@@ -40,7 +49,12 @@ impl MIXCPU {
         let op = oprest.next().ok_or("Invalid Argument")?;
         let rest = oprest.next().ok_or("Invalid Argument")?;
         let mut operation = MIXWord::from(0u32);
-        let default_f = if op != "STJ" { 5 } else { 2 };
+        // let default_f = if op != "STJ" { 5 } else { 2 };
+        let default_f = match op {
+            "STJ" => 2,
+            "MOVE" => 1,
+            _ => 5,
+        };
 
         self.parse_f(&mut operation, rest, default_f)?;
         self.parse_i(&mut operation, rest)?;
