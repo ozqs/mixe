@@ -1,11 +1,11 @@
-<h1 align="center">MIX Computer Simulator</h1>
+<h1 align="center">MIX Computer Emulator</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/language-rust-orange.svg" alt="language rust">
   <img src="https://img.shields.io/github/license/ozqs/mixe" alt="license">
 </p>
 
-<p align="center">A MIX computer simulator written in Rust</p>
+<p align="center">A MIX computer emulator written in Rust</p>
 
 ## Table of Contents
 
@@ -30,8 +30,8 @@ MIX is a hypothetical computer introduced by Donald Knuth in his classic book "T
 To install this simulator, make sure you have Rust installed. Then, run the following commands:
 
 ```bash
-git clone https://github.com/yourusername/mix-computer-simulator.git
-cd mix-computer-simulator
+git clone https://github.com/ozqs/mixe.git
+cd mixe
 cargo run --release
 ```
 
