@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/language-rust-orange.svg" alt="language rust">
-  <img src="https://img.shields.io/github/license/yourusername/mix-computer-simulator" alt="license">
+  <img src="https://img.shields.io/github/license/ozqs/mixe" alt="license">
 </p>
 
 <p align="center">A MIX computer simulator written in Rust</p>
