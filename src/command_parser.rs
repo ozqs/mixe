@@ -1,27 +1,8 @@
 use crate::MIXWord;
 use std::error::Error;
 use std::fmt::Display;
-// pub struct Instruction(pub u32);
-//
-// impl From<Instruction> for MIXWord {
-//     fn from(value: Instruction) -> Self {
-//         MIXWord(value.0)
-//     }
-// }
-//
-// impl From<MIXWord> for Instruction {
-//     fn from(value: MIXWord) -> Self {
-//         Instruction(value.0);
-//     }
-// }
 
 type Instruction = MIXWord;
-
-// impl From<&str> for Instruction {
-//     fn from(value: &str) -> Self {
-//         parse(value).unwrap()
-//     }
-// }
 
 impl Display for Instruction {
     fn fmt(&self, f1: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

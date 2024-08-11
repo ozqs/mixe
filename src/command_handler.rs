@@ -8,7 +8,7 @@ pub fn handle_command(command: &str, computer: &mut MIXCPU) -> Result<(), Box<dy
 
     if command.len() >= 7 {
         match &command[..5] {
-            "print" => {
+            "PRINT" => {
                 let content = String::from(&command[6..]);
                 if content.contains('-') {
                     let mid = content.find('-').unwrap();
@@ -50,7 +50,7 @@ pub fn handle_command(command: &str, computer: &mut MIXCPU) -> Result<(), Box<dy
                 }
                 Ok(())
             }
-            "start" => {
+            "START" => {
                 if let Ok(x) = String::from(&command[6..]).parse() {
                     computer.location = x
                 }
@@ -60,7 +60,7 @@ pub fn handle_command(command: &str, computer: &mut MIXCPU) -> Result<(), Box<dy
                 computer.start();
                 Ok(())
             }
-            "store" => {
+            "STORE" => {
                 let location = String::from(&command[6..]);
                 let data = serde_json::to_string(&computer.computer).unwrap();
                 let path = Path::new(&location);
@@ -68,13 +68,13 @@ pub fn handle_command(command: &str, computer: &mut MIXCPU) -> Result<(), Box<dy
                 file.write_all(data.as_bytes())?;
                 Ok(())
             }
-            "carry" => {
+            "CARRY" => {
                 let location = String::from(&command[6..]);
                 let data = std::fs::read_to_string(location)?;
                 computer.computer = serde_json::from_str(&data)?;
                 Ok(())
             }
-            "parse" => {
+            "PARSE" => {
                 let location = String::from(&command[6..]);
                 for i in std::fs::read_to_string(location)?.lines() {
                     let mut foo = i.splitn(2, ' ');
