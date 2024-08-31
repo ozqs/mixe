@@ -43,3 +43,12 @@ pub fn draw_text_top_left(text: &str, x: f32, y: f32, font_size: f32, color: Col
     // 绘制文本
     draw_text(text, x, adjusted_y, font_size, color);
 }
+
+/// 绘制文本
+pub fn draw_text_offseted(text: &str, x: f32, y: f32, font_size: f32, offset_y: f32, color: Color) {
+    // 计算基线对齐的 y 坐标
+    let adjusted_y = y + offset_y;
+    
+    // 绘制文本
+    draw_text(text, x, adjusted_y, font_size, color);
+}

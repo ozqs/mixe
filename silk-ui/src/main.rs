@@ -1,5 +1,5 @@
 use macroquad::prelude::*;
-use silk_ui::sliding_option_bar::SlidingOptionBar;
+use silk_ui::prelude::*;
 
 #[macroquad::main("Sliding Option Bar Example")]
 async fn main() {
@@ -10,7 +10,7 @@ async fn main() {
         0,
         40.,
         GRAY,
-        1.0,
+        0.5,
     );
 
     loop {

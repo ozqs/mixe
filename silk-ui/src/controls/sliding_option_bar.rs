@@ -1,5 +1,5 @@
 use crate::{
-    draw::{draw_horizontal_capsule, draw_text_top_left},
+    draw::{draw_horizontal_capsule, draw_text_offseted, draw_text_top_left},
     fluent_shapes::FluentCapsule,
 };
 use macroquad::prelude::*;
@@ -18,6 +18,7 @@ pub struct SlidingOptionBar {
     option_rects: Vec<Rect>,
     hint_text_size: f32,
     option_text_size: f32,
+    offset_y: f32,
 }
 
 impl SlidingOptionBar {
@@ -35,7 +36,7 @@ impl SlidingOptionBar {
             .map(|s| s.to_string())
             .collect::<Vec<_>>();
 
-        let (hint_rect, option_rects, hint_text_size, option_text_size) =
+        let (hint_rect, option_rects, hint_text_size, option_text_size, offset_y) =
             Self::measure_options(start_pos, hint_text, &options, target_height);
 
         let initial_rect = option_rects[initial_index].clone();
@@ -59,6 +60,7 @@ impl SlidingOptionBar {
             option_rects,
             hint_text_size,
             option_text_size,
+            offset_y
         }
     }
 
@@ -67,7 +69,7 @@ impl SlidingOptionBar {
         hint_text: &str,
         options: &Vec<String>,
         target_height: f32,
-    ) -> (Rect, Vec<Rect>, f32, f32) {
+    ) -> (Rect, Vec<Rect>, f32, f32, f32) {
         let mut option_rects = Vec::with_capacity(options.len());
 
         let hint_text_size = target_height - PADDING * 4.;
@@ -98,6 +100,7 @@ impl SlidingOptionBar {
             option_rects,
             hint_text_size,
             option_text_size,
+            measure_text(&options[0], None, option_text_size as u16, 1.0).offset_y
         )
     }
 
@@ -111,7 +114,7 @@ impl SlidingOptionBar {
                 rect.y - PADDING,
                 rect.w + PADDING * 2.,
                 rect.h + PADDING * 2.,
-            ); // 使用 w 和 h
+            );
         }
     }
 
@@ -153,17 +156,31 @@ impl SlidingOptionBar {
         // 绘制选项
         for (i, option) in self.options.iter().enumerate() {
             let rect = &self.option_rects[i];
-            draw_text_top_left(option, rect.x, rect.y, self.option_text_size, BLACK);
+            draw_text_offseted(option, rect.x, rect.y, self.option_text_size, self.offset_y, BLACK);
         }
     }
 
     // 检查点击事件
     pub fn handle_click(&mut self, mouse_pos: Vec2) {
         for (i, rect) in self.option_rects.iter().enumerate() {
-            if rect.contains(mouse_pos) {
+            let wrapper_rect = Rect::new(
+                rect.x - PADDING,
+                rect.y - PADDING,
+                rect.w + PADDING * 2.,
+                rect.h + PADDING * 2.,
+            );
+            if wrapper_rect.contains(mouse_pos) {
                 self.select_option(i);
                 break;
             }
         }
+    }
+
+    pub fn get_current_option(&self) -> &str {
+        &self.options[self.current_index]
+    }
+
+    pub fn get_current_index(&self) -> usize {
+        self.current_index
     }
 }
