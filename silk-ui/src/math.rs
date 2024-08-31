@@ -13,7 +13,6 @@ where
         + std::ops::Sub<Output = T>
         + std::ops::Mul<f32, Output = T>
         + Copy
-        + PartialOrd
         + std::fmt::Debug,
 {
     pub value: T,
@@ -28,7 +27,6 @@ where
         + std::ops::Sub<Output = T>
         + std::ops::Mul<f32, Output = T>
         + Copy
-        + PartialOrd
         + std::fmt::Debug,
 {
     pub fn new(value: T, duration_secs: f32) -> Self {
@@ -54,5 +52,9 @@ where
         if self.progress >= 1.0 {
             self.progress = 1.0; // 防止进度超过1
         }
+    }
+
+    pub fn is_finished(&self) -> bool {
+        self.progress >= 1.0
     }
 }
