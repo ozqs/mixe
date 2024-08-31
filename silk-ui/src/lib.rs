@@ -1,3 +1,4 @@
-pub mod fluent_rounded_rectangle;
+pub mod fluent_shapes;
 pub mod math;
 pub mod draw;
+pub mod sliding_option_bar;
