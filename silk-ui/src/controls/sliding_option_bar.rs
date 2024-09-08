@@ -1,6 +1,6 @@
 use crate::{
-    draw::{draw_horizontal_capsule, draw_text_offseted, draw_text_top_left},
-    fluent_shapes::FluentCapsule,
+    draw::{draw_capsule, draw_text_offseted, draw_text_top_left},
+    fluent::fluent_shapes::FluentCapsule,
 };
 use macroquad::prelude::*;
 
@@ -133,7 +133,7 @@ impl SlidingOptionBar {
             self.option_rects[self.option_rects.len() - 1].h,
         );
 
-        draw_horizontal_capsule(
+        draw_capsule(
             big_rect.x - 2. * PADDING,
             big_rect.y - 3. * PADDING,
             big_rect.w + 4. * PADDING,

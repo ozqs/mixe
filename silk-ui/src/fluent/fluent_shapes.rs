@@ -1,5 +1,5 @@
 use macroquad::prelude::*;
-use crate::math::Fluent;
+use crate::fluent::Fluent;
 use crate::draw::*;
 
 pub struct FluentShape {
@@ -99,11 +99,11 @@ impl FluentCapsule {
     }
 
     pub fn draw(&self) {
-        draw_horizontal_capsule(
+        draw_capsule(
             self.shape.position.value.x,
             self.shape.position.value.y,
             self.shape.size.value.x,
-            self.shape.size.value.y / 2.0,
+            self.shape.size.value.y,
             self.shape.color,
         );
     }

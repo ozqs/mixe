@@ -12,24 +12,28 @@ pub fn draw_rounded_rectangle(x: f32, y: f32, width: f32, height: f32, radius: f
     draw_circle(x + width - radius, y + height - radius, radius, color);
 }
 
-/// 绘制横向的胶囊体
-pub fn draw_horizontal_capsule(x: f32, y: f32, width: f32, radius: f32, color: Color) {
-    let height = 2.0 * radius;
+/// 绘制胶囊体
+/// 
+/// 参数:
+/// - x: 胶囊体左上角或左端点的x坐标
+/// - y: 胶囊体左上角或上端点的y坐标
+/// - width: 水平方向上的尺寸
+/// - height: 垂直方向上的尺寸
+/// - color: 胶囊体的颜色
+pub fn draw_capsule(x: f32, y: f32, width: f32, height: f32, color: Color) {
+    let radius = 0.5 * if width > height { height } else { width };
 
-    // 确保宽度不小于两倍半径，保证胶囊体合理
-    if width < 2.0 * radius {
-        println!("宽度太小，无法绘制胶囊体");
-        return;
+    if width > height {
+        // 横向胶囊体
+        draw_rectangle(x + radius, y, width - 2.0 * radius, height, color);
+        draw_circle(x + radius, y + radius, radius, color);
+        draw_circle(x + width - radius, y + radius, radius, color);
+    } else {
+        // 纵向胶囊体
+        draw_rectangle(x, y + radius, width, height - 2.0 * radius, color);
+        draw_circle(x + radius, y + radius, radius, color);
+        draw_circle(x + radius, y + height - radius, radius, color);
     }
-
-    // 绘制中心矩形
-    draw_rectangle(x + radius, y, width - 2.0 * radius, height, color);
-
-    // 绘制左侧半圆
-    draw_circle(x + radius, y + radius, radius, color);
-
-    // 绘制右侧半圆
-    draw_circle(x + width - radius, y + radius, radius, color);
 }
 
 /// 根据左上角坐标绘制文本
