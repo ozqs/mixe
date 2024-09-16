@@ -2,15 +2,26 @@ use macroquad::prelude::*;
 use crate::math::ease_in_out_cubic;
 
 pub mod fluent_shapes;
-pub mod fluent_polygon;
-pub mod fluent_capsule;
+
+pub trait Interpolatable {
+    fn interpolate(&self, other: &Self, progress: f32) -> Self;
+}
+
+impl<T> Interpolatable for T
+where
+    T: std::ops::Add<Output=T>
+    + std::ops::Sub<Output=T>
+    + std::ops::Mul<f32, Output=T>
+    + Clone,
+{
+    fn interpolate(&self, other: &Self, progress: f32) -> Self {
+        (other.clone() - self.clone()) * progress + self.clone()
+    }
+}
 
 pub struct Fluent<T>
 where
-    T: std::ops::Add<Output = T>
-        + std::ops::Sub<Output = T>
-        + std::ops::Mul<f32, Output = T>
-        + Clone,
+    T: Interpolatable + Clone,
 {
     pub value: T,
     pub target_value: T,
@@ -20,10 +31,7 @@ where
 
 impl<T> Fluent<T>
 where
-    T: std::ops::Add<Output = T>
-        + std::ops::Sub<Output = T>
-        + std::ops::Mul<f32, Output = T>
-        + Clone
+    T: Interpolatable + Clone,
 {
     pub fn new(value: T, duration_secs: f32) -> Self {
         Self {
@@ -43,7 +51,8 @@ where
         if self.progress < 1.0 {
             self.progress += delta / self.duration_secs; // 控制平滑速度
             let eased_progress = ease_in_out_cubic(self.progress.min(1.0));
-            self.value = self.value.clone() + (self.target_value.clone() - self.value.clone()) * eased_progress;
+            // self.value = self.value.clone() + (self.target_value.clone() - self.value.clone()) * eased_progress;
+            self.value = self.value.interpolate(&self.target_value, eased_progress);
         }
         if self.progress >= 1.0 {
             self.progress = 1.0; // 防止进度超过1

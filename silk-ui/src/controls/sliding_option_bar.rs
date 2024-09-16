@@ -135,9 +135,9 @@ impl SlidingOptionBar {
 
         draw_capsule(
             big_rect.x - 2. * PADDING,
-            big_rect.y - 3. * PADDING,
+            big_rect.y - 1.5 * PADDING,
             big_rect.w + 4. * PADDING,
-            big_rect.h + 2. * PADDING,
+            big_rect.h + 3.0 * PADDING,
             LIGHTGRAY,
         );
 
