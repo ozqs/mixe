@@ -26,10 +26,10 @@ impl Capsule {
 impl From<Rect> for Capsule {
     fn from(value: Rect) -> Self {
         Self {
-            value.x,
-            value.y,
-            value.w,
-            value.h,
+            left: value.x,
+            top: value.y,
+            width: value.w,
+            height: value.h,
         }
     }
 }
