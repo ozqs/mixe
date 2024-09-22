@@ -3,16 +3,17 @@ use crate::draw::draw_capsule;
 use crate::fluent::Interpolatable;
 use super::Drawable;
 
+#[derive(Copy, Clone)]
 pub struct Capsule {
-    left: f32,
-    top: f32,
-    width: f32,
-    height: f32,
-    color: Color,
+    pub left: f32,
+    pub top: f32,
+    pub width: f32,
+    pub height: f32,
+    pub color: Color,
 }
 
 impl Capsule {
-    fn new(left: f32, top: f32, width: f32, height: f32, color: Color) -> Self {
+    pub fn new(left: f32, top: f32, width: f32, height: f32, color: Color) -> Self {
         Self {
             left,
             top,
@@ -53,7 +54,7 @@ impl Interpolatable for Capsule {
             top: self.top + (other.top - self.top) * progress,
             width: self.width + (other.width - self.width) * progress,
             height: self.height + (other.height - self.height) * progress,
-            color: (self.color.to_vec() + (other.color.to_vec() - self.color.to_vec()) * progress).into(),
+            color: Color::from_vec(self.color.to_vec() + (other.color.to_vec() - self.color.to_vec()) * progress),
         }
     }
 }

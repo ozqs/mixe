@@ -1,5 +1,5 @@
 pub mod capsule;
 
-trait Drawable {
+pub trait Drawable {
     fn draw(&self);
 }

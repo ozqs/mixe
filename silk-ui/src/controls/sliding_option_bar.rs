@@ -1,8 +1,10 @@
 use crate::{
     draw::{draw_capsule, draw_text_offseted, draw_text_top_left},
-    fluent::fluent_shapes::FluentCapsule,
+    shapes::capsule::Capsule,
 };
 use macroquad::prelude::*;
+use crate::fluent::Fluent;
+use crate::shapes::Drawable;
 
 const PADDING: f32 = 5.;
 
@@ -12,7 +14,7 @@ pub struct SlidingOptionBar {
     hint_text: String,
     options: Vec<String>,
     current_index: usize,
-    bar: FluentCapsule,
+    bar: Fluent<Capsule>,
     target_height: f32,
     hint_rect: Rect,
     option_rects: Vec<Rect>,
@@ -40,14 +42,13 @@ impl SlidingOptionBar {
             Self::measure_options(start_pos, hint_text, &options, target_height);
 
         let initial_rect = option_rects[initial_index].clone();
-        let bar = FluentCapsule::new(
+        let bar = Fluent::new(Capsule::new(
             initial_rect.x - PADDING,
             initial_rect.y - PADDING,
             initial_rect.w + PADDING * 2.,
             initial_rect.h + PADDING * 2.,
             bar_color,
-            duration_secs,
-        );
+        ), duration_secs);
 
         Self {
             start_pos,
@@ -60,7 +61,7 @@ impl SlidingOptionBar {
             option_rects,
             hint_text_size,
             option_text_size,
-            offset_y
+            offset_y,
         }
     }
 
@@ -109,12 +110,13 @@ impl SlidingOptionBar {
         if index < self.options.len() {
             self.current_index = index;
             let rect = &self.option_rects[index];
-            self.bar.set_target(
+            self.bar.set_target(Capsule::new(
                 rect.x - PADDING,
                 rect.y - PADDING,
                 rect.w + PADDING * 2.,
                 rect.h + PADDING * 2.,
-            );
+                self.bar.value.color
+            ));
         }
     }
 
@@ -142,7 +144,7 @@ impl SlidingOptionBar {
         );
 
         // 绘制当前选项条（在选项下方）
-        self.bar.draw();
+        self.bar.value.draw();
 
         // 绘制提示文字在第一个选项的正左方
         draw_text_top_left(
