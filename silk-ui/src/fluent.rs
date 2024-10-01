@@ -51,7 +51,6 @@ where
         if self.progress < 1.0 {
             self.progress += delta / self.duration_secs; // 控制平滑速度
             let eased_progress = ease_in_out_cubic(self.progress.min(1.0));
-            // self.value = self.value.clone() + (self.target_value.clone() - self.value.clone()) * eased_progress;
             self.value = self.value.interpolate(&self.target_value, eased_progress);
         }
         if self.progress >= 1.0 {
